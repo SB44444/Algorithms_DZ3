@@ -1,0 +1,135 @@
+https://github.com/SB44444/Algorithms_DZ3.git
+
+Урок 4. Структуры данных дерево и хэш-таблица
+Необходимо превратить собранное на семинаре дерево поиска в полноценное левостороннее красно-черное дерево. И реализовать в нем метод добавления новых элементов с балансировкой.
+
+Красно-черное дерево имеет следующие критерии:
+• Каждая нода имеет цвет (красный или черный)
+• Корень дерева всегда черный
+• Новая нода всегда красная
+• Красные ноды могут быть только левым ребенком
+• У краной ноды все дети черного цвета
+
+Соответственно, чтобы данные условия выполнялись, после добавления элемента
+в дерево необходимо произвести балансировку, благодаря которой все критерии выше станут валидными.
+ Для балансировки существует 3 операции – левый малый поворот, правый малый поворот и смена цвета.
+
+Код для просмотра
+
+//////////////////////////////////////////////
+package ru.geekbrains;
+
+import java.util.Scanner;
+
+public class Main {
+    private static node root;
+
+    public static void main(String[] args) {
+        red_BlackTree node = new red_BlackTree();
+        Scanner scan = new Scanner(System.in);
+        char ch;
+        do {System.out.println("Input int digit and 'Enter'");
+            int number = scan.nextInt();
+            root = node.add(root, number);
+            node.caseR_B(root);
+            System.out.println("\nTo add digit press '+' and 'Enter'\nTo exit press any letter sign");
+            ch = scan.next().charAt(0);
+        } while (ch == '+');
+    }
+}
+
+////////////////////////////////////////////
+
+ package ru.geekbrains;
+
+class node {
+    node leftChild, rightChild;
+    int value;
+    boolean color;
+    node(int value) {
+        this.value = value;
+        leftChild = null;
+        rightChild = null;
+        color = true;
+    }
+}
+public class red_BlackTree {
+
+    private static node root = null; //Для доступа к рут создаем static root
+
+    node leftSwap(node myNode) {  // Ф-ция левого поворота
+        System.out.printf("leftSwap\n");
+        node child = myNode.rightChild;
+        node childLeft = child.leftChild;
+        child.leftChild = myNode;
+        myNode.rightChild = childLeft;
+
+        return child;
+    }
+
+    node rightSwap(node myNode) { // Ф-ция правого поворота
+        System.out.printf("rightSwap\n");
+        node child = myNode.leftChild;
+        node childRight = child.rightChild;
+        child.rightChild = myNode;
+        myNode.leftChild = childRight;
+        return child;
+    }
+        boolean red_true(node myNode) { // Новый узел всегда красного цвета, проверяем условие ф-цией
+        if (myNode == null) {
+            return false;
+        }
+            if ((myNode.color == true)) return true;
+            else return false;
+    }
+
+
+    void swapColors(node node1, node node2) { // Ф-ция смены цвета
+        boolean temp = node1.color;
+        node1.color = node2.color;
+        node2.color = temp;
+    }
+
+    node add(node myNode, int value) { // Ф-ция добавления нового эл-та и балансировки дерева
+
+        if (myNode == null) {
+            return new node(value);
+        }
+        if (value < myNode.value) {
+            myNode.leftChild = add(myNode.leftChild, value);
+        } else if (value > myNode.value) {
+            myNode.rightChild = add(myNode.rightChild, value);
+        } else {
+            return myNode;
+        }
+
+        if (red_true(myNode.rightChild) && !red_true(myNode.leftChild)) { // rightChild красный, а leftChild черный или null
+            myNode = leftSwap(myNode); // leftSwap
+            swapColors(myNode, myNode.leftChild); // Сменить цвет дочернего узла на красный
+        }
+
+        if (red_true(myNode.leftChild) && red_true(myNode.leftChild.leftChild)) { // leftChild и справа на ветке ниже узлы красные
+            myNode = rightSwap(myNode);
+            swapColors(myNode, myNode.rightChild); // Сменить цвет дочернего узла на красный
+        }
+
+        if (red_true(myNode.leftChild) && red_true(myNode.rightChild)) { // Оба ребенка красные
+            myNode.color = !myNode.color; // Сменить цвет на противоположный
+            myNode.leftChild.color = false; // Изменить цвет родителя на черный
+            myNode.rightChild.color = false;
+        }
+        return myNode;
+    }
+    void caseR_B(node node) { // Ф-ция маркировки узлов R - красный, B - черный
+        if (node != null) {
+            caseR_B(node.leftChild);
+            char c = 'R';
+            if (!node.color)
+                c = 'B';
+            System.out.print(node.value + ""+ c + " ");
+            caseR_B(node.rightChild); // Рекусивный обход эл-тов
+        }
+    }
+
+
+}
